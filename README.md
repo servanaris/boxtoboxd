@@ -36,6 +36,20 @@ The repo includes a sanitized catalog database at `data/box_to_boxd.sqlite3` so 
 python3 -m unittest discover -s tests
 ```
 
+## Deploy from GitHub
+
+GitHub Pages cannot run this app because box-to-boxd is a Python server with SQLite, accounts, reviews, and moderation. Use a GitHub-connected web host instead.
+
+This repo includes `render.yaml` for Render:
+
+1. Push the repo to GitHub.
+2. Open [Render Blueprints](https://dashboard.render.com/blueprints/new).
+3. Connect the `servanaris/boxtoboxd` GitHub repo.
+4. Create the `boxtoboxd` web service from the blueprint.
+5. Render will run the tests during build and start the app with `python3 app.py`.
+
+The free Render web service is good for a public demo. It uses the included catalog database, but free instances have an ephemeral filesystem, so new signups/reviews can reset after redeploys, restarts, or idle spin-downs. For a real production launch, move user data to Postgres or attach a persistent disk on a paid service.
+
 ## Project shape
 
 ```text
@@ -43,6 +57,7 @@ app.py              # Python server, routes, database setup, i18n, and page rend
 static/styles.css   # Visual styling
 tests/test_app.py   # Small standard-library test suite
 data/box_to_boxd.sqlite3 # Sanitized seed catalog database
+render.yaml         # Render deployment blueprint
 ```
 
 ## Admin flow

@@ -9,6 +9,7 @@ import html
 import os
 import re
 import secrets
+import shutil
 import sqlite3
 import unicodedata
 
@@ -17,14 +18,14 @@ APP_NAME = "box-to-boxd"
 BASE_DIR = Path(__file__).resolve().parent
 LEGACY_DB_PATH = BASE_DIR / "data" / "matchboxd.sqlite3"
 DEFAULT_DB_PATH = BASE_DIR / "data" / "box_to_boxd.sqlite3"
+DATABASE_ENV_PATH = os.environ.get("BOX_TO_BOXD_DB") or os.environ.get("MATCHBOXD_DB")
 DB_PATH = Path(
-    os.environ.get("BOX_TO_BOXD_DB")
-    or os.environ.get("MATCHBOXD_DB")
+    DATABASE_ENV_PATH
     or (LEGACY_DB_PATH if LEGACY_DB_PATH.exists() and not DEFAULT_DB_PATH.exists() else DEFAULT_DB_PATH)
 )
 STATIC_DIR = BASE_DIR / "static"
-HOST = "127.0.0.1"
-PORT = int(os.environ.get("BOX_TO_BOXD_PORT") or os.environ.get("MATCHBOXD_PORT", "8000"))
+HOST = os.environ.get("BOX_TO_BOXD_HOST") or ("0.0.0.0" if os.environ.get("RENDER") else "127.0.0.1")
+PORT = int(os.environ.get("BOX_TO_BOXD_PORT") or os.environ.get("MATCHBOXD_PORT") or os.environ.get("PORT", "8000"))
 
 SUPPORTED_LANGS = {"tr", "en"}
 DEFAULT_LANG = "tr"
@@ -1084,8 +1085,17 @@ def t(lang, key):
     return TRANSLATIONS.get(lang, TRANSLATIONS[DEFAULT_LANG]).get(key, TRANSLATIONS["en"].get(key, key))
 
 
-def connect_db():
+def prepare_database_file():
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    if not DATABASE_ENV_PATH or DB_PATH.exists() or not DEFAULT_DB_PATH.exists():
+        return
+    if DB_PATH.resolve() == DEFAULT_DB_PATH.resolve():
+        return
+    shutil.copy2(DEFAULT_DB_PATH, DB_PATH)
+
+
+def connect_db():
+    prepare_database_file()
     connection = sqlite3.connect(DB_PATH)
     connection.row_factory = sqlite3.Row
     return connection

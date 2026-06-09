@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: boxtoboxd
+    runtime: python
+    plan: free
+    autoDeploy: true
+    buildCommand: python3 -m unittest discover -s tests
+    startCommand: python3 app.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.4
+      - key: BOX_TO_BOXD_HOST
+        value: 0.0.0.0
